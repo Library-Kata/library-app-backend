@@ -52,7 +52,6 @@ Library App Backend is a Spring Boot-based RESTful API designed to manage librar
 
 2. **Alternatively, run these commands manually:**
    ```bash
-    mvn clean package
     docker-compose build
     docker-compose up
    ```
