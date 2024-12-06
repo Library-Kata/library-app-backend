@@ -1,6 +1,7 @@
 package com.library.app.service.impl;
 
 import com.library.app.exception.*;
+import com.library.app.mapper.BookMapper;
 import com.library.app.model.dto.BookDTO;
 import com.library.app.model.entity.*;
 import com.library.app.repository.*;
@@ -26,29 +27,14 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<BookDTO> getAllBooks() {
         return bookRepository.findAll().stream()
-                .map(this::mapToDTO)
+                .map(BookMapper::toDto)
                 .toList();
     }
     @Override
     public BookDTO addBook(BookDTO bookDTO) {
-        BookEntity bookEntity = BookEntity.builder()
-                .title(bookDTO.getTitle())
-                .author(bookDTO.getAuthor())
-                .available(true)
-                .build();
-
-        BookEntity savedBook = bookRepository.save(bookEntity);
-        return mapToDTO(savedBook);
-    }
-
-
-    // Utility method to convert BookEntity to BookDTO
-    private BookDTO mapToDTO(BookEntity bookEntity) {
-        return BookDTO.builder()
-                .id(bookEntity.getId())
-                .title(bookEntity.getTitle())
-                .author(bookEntity.getAuthor())
-                .available(bookEntity.isAvailable())
-                .build();
+        var bookEntity = BookMapper.toEntity(bookDTO);
+        bookEntity.setAvailable(true);
+        var savedBook = bookRepository.save(bookEntity);
+        return BookMapper.toDto(savedBook);
     }
 }

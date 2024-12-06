@@ -1,6 +1,8 @@
 package com.library.app.service.impl;
 
 import com.library.app.exception.UsernameAlreadyTakenException;
+import com.library.app.mapper.UserMapper;
+import com.library.app.model.UserRole;
 import com.library.app.model.dto.UserDTO;
 import com.library.app.model.entity.BookEntity;
 import com.library.app.model.entity.BorrowingEntity;
@@ -27,33 +29,29 @@ public class UserServiceImpl implements UserService {
     private final BorrowingRepository borrowingRepository;
     private final BookRepository bookRepository;
 
-    private final Set<String> allowedRoles = Set.of("ROLE_USER", "ROLE_ADMIN");
+    // Allowed roles as enums
+    private final Set<UserRole> allowedRoles = Set.of(UserRole.ROLE_USER, UserRole.ROLE_ADMIN);
 
     @Override
     public void registerUser(UserDTO userDTO) {
         if (userRepository.existsById(userDTO.getUsername())) {
             throw new UsernameAlreadyTakenException("Username already taken");
         }
+
+        // Check if all user roles are contained in allowedRoles
         if (!allowedRoles.containsAll(userDTO.getRoles())) {
             throw new IllegalArgumentException("One or more roles are invalid.");
         }
 
-        UserEntity userEntity = UserEntity.builder()
-                .username(userDTO.getUsername())
-                .password(passwordEncoder.encode(userDTO.getPassword()))
-                .roles(userDTO.getRoles())
-                .build();
-
+        var userEntity = UserMapper.toEntity(userDTO);
+        userEntity.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         userRepository.save(userEntity);
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(user -> UserDTO.builder()
-                        .username(user.getUsername())
-                        .roles(user.getRoles())
-                        .build())
+                .map(UserMapper::toDto)
                 .toList();
     }
 
@@ -66,7 +64,7 @@ public class UserServiceImpl implements UserService {
         UserEntity targetUser = userRepository.findById(targetUsername)
                 .orElseThrow(() -> new RuntimeException("User '" + targetUsername + "' does not exist."));
 
-        if (targetUser.getRoles().contains("ROLE_SUPERADMIN")) {
+        if (targetUser.getRoles().contains(UserRole.ROLE_SUPERADMIN)) {
             throw new RuntimeException("You cannot delete a user with the SUPERADMIN role.");
         }
 

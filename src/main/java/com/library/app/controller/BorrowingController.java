@@ -1,7 +1,8 @@
 package com.library.app.controller;
 
 import com.library.app.exception.UnauthorizedException;
-import com.library.app.model.dto.BorrowingDTO;
+import com.library.app.mapper.BorrowingMapper;
+import com.library.app.model.response.BorrowingResponse;
 import com.library.app.service.BorrowingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,24 +47,28 @@ public class BorrowingController {
 
     @GetMapping("/all")
     @Operation(summary = "Get all borrowed books", description = "Retrieve all books borrowed by the current user.")
-    public ResponseEntity<List<BorrowingDTO>> getAllBorrowedBooks() {
+    public ResponseEntity<List<BorrowingResponse>> getAllBorrowedBooks() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedException("You must be logged in to access this resource.");
         }
         String username = authentication.getName();
-        List<BorrowingDTO> books = borrowingService.getAllBorrowedBooks(username);
+        var books = borrowingService.getAllBorrowedBooks(username).stream()
+                .map(BorrowingMapper::toResponse)
+                .toList();
 
         return ResponseEntity.ok(books);
     }
 
     @GetMapping("/current")
     @Operation(summary = "Get currently borrowed books", description = "Retrieve the list of currently borrowed books by the user.")
-    public ResponseEntity<List<BorrowingDTO>> getCurrentlyBorrowedBooks() {
+    public ResponseEntity<List<BorrowingResponse>> getCurrentlyBorrowedBooks() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        List<BorrowingDTO> books = borrowingService.getCurrentlyBorrowedBooks(username);
+        var books = borrowingService.getCurrentlyBorrowedBooks(username).stream()
+                .map(BorrowingMapper::toResponse)
+                .toList();
         return ResponseEntity.ok(books);
     }
 }

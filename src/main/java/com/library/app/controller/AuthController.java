@@ -1,6 +1,8 @@
 package com.library.app.controller;
 
-import com.library.app.model.dto.UserDTO;
+import com.library.app.model.request.LoginRequest;
+import com.library.app.model.request.UserRequest;
+import com.library.app.model.response.LoginResponse;
 import com.library.app.security.JwtTokenUtil;
 import com.library.app.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,9 +29,11 @@ public class AuthController {
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Register a new user by providing their details.")
-    public ResponseEntity<String> register(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<String> register(@RequestBody UserRequest userRequest) {
         try {
-            userService.registerUser(userDTO);
+            // Convert UserRequest to UserDTO inside userService or using mapper directly
+            var dto = com.library.app.mapper.UserMapper.toDto(userRequest);
+            userService.registerUser(dto);
             return ResponseEntity.ok("User registered successfully.");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -38,11 +42,11 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Login a user", description = "Login by providing valid credentials and receive a JWT token.")
-    public ResponseEntity<String> login(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            userDTO.getUsername(), userDTO.getPassword()
+                            loginRequest.getUsername(), loginRequest.getPassword()
                     )
             );
 
@@ -51,11 +55,11 @@ public class AuthController {
                     .collect(Collectors.toList());
 
             String token = jwtTokenUtil.generateToken(authentication.getName(), roles);
-            return ResponseEntity.ok(token);
+            return ResponseEntity.ok(LoginResponse.builder().token(token).build());
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException("Incorrect username or password.");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("An error occurred during login.");
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

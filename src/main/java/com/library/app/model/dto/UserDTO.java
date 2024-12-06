@@ -1,5 +1,6 @@
 package com.library.app.model.dto;
 
+import com.library.app.model.UserRole;
 import lombok.*;
 
 import java.util.Set;
@@ -14,5 +15,5 @@ import java.util.Set;
 public class UserDTO {
     private String username;
     private String password;
-    private Set<String> roles;
+    private Set<UserRole> roles;
 }

@@ -1,5 +1,6 @@
 package com.library.app.config;
 
+import com.library.app.model.UserRole;
 import com.library.app.model.entity.UserEntity;
 import com.library.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class DataInitializer implements CommandLineRunner {
             UserEntity admin = UserEntity.builder()
                     .username("admin")
                     .password(passwordEncoder.encode("admin123"))
-                    .roles(Set.of("ROLE_SUPERADMIN"))
+                    .roles(Set.of(UserRole.ROLE_SUPERADMIN))
                     .build();
             userRepository.save(admin);
         }

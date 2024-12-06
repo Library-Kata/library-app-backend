@@ -1,5 +1,6 @@
 package com.library.app.config;
 
+import com.library.app.model.UserRole;
 import com.library.app.security.CustomAccessDeniedHandler;
 import com.library.app.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAccessDeniedHandler accessDeniedHandler;
+
+    private static final String[] USER_ADMIN_SUPERADMIN = {"USER", "ADMIN", "SUPERADMIN"};
+    private static final String[] ADMIN_SUPERADMIN = {"ADMIN", "SUPERADMIN"};
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -74,21 +79,21 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
 
                         // Book management (more specific rules)
-                        .requestMatchers(HttpMethod.POST, "/api/books").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/books").hasAnyRole("USER","ADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/books").hasAnyRole(ADMIN_SUPERADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/books").hasAnyRole(USER_ADMIN_SUPERADMIN)
 
                         // Borrowing management
-                        .requestMatchers(HttpMethod.POST, "/api/borrowings/borrow/**").hasAnyRole("USER", "ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/borrowings/return/**").hasAnyRole("USER", "ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/borrowings/**").hasAnyRole("USER", "ADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/borrowings/borrow/**").hasAnyRole(USER_ADMIN_SUPERADMIN)
+                        .requestMatchers(HttpMethod.POST, "/api/borrowings/return/**").hasAnyRole(USER_ADMIN_SUPERADMIN)
+                        .requestMatchers(HttpMethod.GET, "/api/borrowings/**").hasAnyRole(USER_ADMIN_SUPERADMIN)
 
 
                         // User management
-                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole("ADMIN", "SUPERADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/users/{username}").hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyRole(ADMIN_SUPERADMIN)
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/{username}").hasAnyRole(ADMIN_SUPERADMIN)
 
                         // General rule (applied after more specific ones)
-                        .requestMatchers("/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                        .requestMatchers("/**").hasAnyRole(ADMIN_SUPERADMIN)
 
                         // Any other request must be authenticated
                         .anyRequest().authenticated()

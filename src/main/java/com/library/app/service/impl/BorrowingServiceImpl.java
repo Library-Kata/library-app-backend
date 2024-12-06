@@ -1,6 +1,7 @@
 package com.library.app.service.impl;
 
 import com.library.app.exception.*;
+import com.library.app.mapper.BorrowingMapper;
 import com.library.app.model.dto.BookDTO;
 import com.library.app.model.dto.BorrowingDTO;
 import com.library.app.model.dto.UserDTO;
@@ -82,44 +83,16 @@ public class BorrowingServiceImpl implements BorrowingService {
 
     @Override
     public List<BorrowingDTO> getAllBorrowedBooks(String username) {
-        List<BorrowingEntity> borrowings = borrowingRepository.findByUserUsername(username);
-
-        return borrowings.stream()
-                .map(this::mapToDTO)
+        return borrowingRepository.findByUserUsername(username).stream()
+                .map(BorrowingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<BorrowingDTO> getCurrentlyBorrowedBooks(String username) {
-        List<BorrowingEntity> borrowings = borrowingRepository.findByUserUsernameAndReturnedDateIsNull(username);
-        return borrowings.stream()
-                .map(this::mapToDTO)
+        return borrowingRepository.findByUserUsernameAndReturnedDateIsNull(username).stream()
+                .map(BorrowingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-    // Utility method to convert BookEntity to BookDTO
-    private BorrowingDTO mapToDTO(BorrowingEntity borrowingEntity) {
-        // Map UserEntity to UserDTO
-        UserDTO userDTO = UserDTO.builder()
-                .username(borrowingEntity.getUser().getUsername())
-                .roles(borrowingEntity.getUser().getRoles())
-                .build();
-
-        // Map BookEntity to BookDTO
-        BookDTO bookDTO = BookDTO.builder()
-                .id(borrowingEntity.getBook().getId())
-                .title(borrowingEntity.getBook().getTitle())
-                .author(borrowingEntity.getBook().getAuthor())
-                .available(borrowingEntity.getBook().isAvailable())
-                .build();
-
-        // Map BorrowingEntity to BorrowingDTO
-        return BorrowingDTO.builder()
-                .id(borrowingEntity.getId())
-                .user(userDTO)
-                .book(bookDTO)
-                .borrowDate(borrowingEntity.getBorrowDate())
-                .returnedDate(borrowingEntity.getReturnedDate())
-                .build();
-    }
 }

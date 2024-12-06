@@ -1,6 +1,8 @@
 package com.library.app.controller;
 
-import com.library.app.model.dto.UserDTO;
+import com.library.app.mapper.UserMapper;
+import com.library.app.model.request.UserRequest;
+import com.library.app.model.response.UserResponse;
 import com.library.app.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,9 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * Controller for user-related endpoints.
- */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -24,8 +23,10 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Get all users", description = "Retrieve the list of all users.")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.getAllUsers();
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        var users = userService.getAllUsers().stream()
+                .map(UserMapper::toResponse)
+                .toList();
         return ResponseEntity.ok(users);
     }
 
@@ -41,4 +42,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // Moved registration to AuthController to keep things consistent
 }
